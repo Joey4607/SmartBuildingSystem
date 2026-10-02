@@ -49,11 +49,9 @@ router.post('/', async (req, res, next) => {
 router.patch('/:id/status', requireAdmin, async (req, res, next) => {
   try {
     const id = Number(req.params.id); const status = String(req.body.status || '').toLowerCase();
-    const resolutionNotes = String(req.body.resolutionNotes || '').trim();
     if (!Number.isInteger(id) || !['open', 'in progress', 'completed'].includes(status)) return res.status(400).json({ message: 'Choose a valid maintenance status.' });
-    if (status === 'completed' && !resolutionNotes) return res.status(400).json({ message: 'Add resolution notes before completing a request.' });
     const db = await getDatabase();
-    const result = await db.run("UPDATE maintenance_requests SET status = ?, resolution_notes = CASE WHEN ? = 'completed' THEN ? ELSE resolution_notes END, completed_at = CASE WHEN ? = 'completed' THEN CURRENT_TIMESTAMP ELSE NULL END WHERE id = ?", status, status, resolutionNotes, status, id);
+    const result = await db.run("UPDATE maintenance_requests SET status = ?, completed_at = CASE WHEN ? = 'completed' THEN CURRENT_TIMESTAMP ELSE NULL END WHERE id = ?", status, status, id);
     if (!result.changes) return res.status(404).json({ message: 'Maintenance request not found.' });
     res.json({ message: status === 'completed' ? 'Request completed and moved to maintenance history.' : 'Maintenance status updated.' });
   } catch (error) { next(error); }
