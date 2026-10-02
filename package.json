@@ -1,0 +1,15 @@
+{
+  "name": "cet333-smart-building-monitoring",
+  "private": true,
+  "version": "1.0.0",
+  "description": "CET333 Smart Building Monitoring System prototype",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace server\" \"npm run dev --workspace client\"",
+    "build": "npm run build --workspace client",
+    "start": "npm run start --workspace server",
+    "test": "npm run test --workspace server && npm run test --workspace client"
+  },
+  "workspaces": ["client", "server"],
+  "devDependencies": {"concurrently": "^9.1.2"},
+  "engines": {"node": ">=22.5.0"}
+}

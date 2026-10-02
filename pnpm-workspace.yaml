@@ -1,0 +1,8 @@
+packages:
+  - client
+  - server
+onlyBuiltDependencies:
+  - esbuild
+allowBuilds:
+  esbuild: set this to true or false
+  sqlite3: set this to true or false
