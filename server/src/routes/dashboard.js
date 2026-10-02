@@ -8,7 +8,7 @@ router.get('/summary', requireAuth, async (req, res, next) => {
     const db = await getDatabase();
     const statusRows = await db.all('SELECT status, COUNT(*) AS count FROM equipment GROUP BY status');
     const equipment = { total: 0, operational: 0, warning: 0, offline: 0 };
-    statusRows.forEach(row => { equipment[row.status] = row.count; equipment.total += row.count; });
+    statusRows.forEach(row => { const count = Number(row.count) || 0; equipment[row.status] = count; equipment.total += count; });
     const maintenance = await db.get("SELECT COUNT(*) AS count FROM maintenance_requests WHERE status != 'completed'");
     const maintenanceRows = await db.all('SELECT priority, status, created_at AS createdAt, completed_at AS completedAt FROM maintenance_requests');
     const requestPriorities = { low: 0, medium: 0, high: 0 };
@@ -17,7 +17,7 @@ router.get('/summary', requireAuth, async (req, res, next) => {
     maintenanceRows.filter(row => row.completedAt).forEach(row => { const month = String(row.completedAt).slice(0, 7); completedByMonth[month] = (completedByMonth[month] || 0) + 1; });
     const sensors = await db.all(`SELECT sr.sensor_type AS type, sr.value, sr.unit, sr.location, b.name AS building FROM sensor_readings sr INNER JOIN (SELECT sensor_type, MAX(id) id FROM sensor_readings GROUP BY sensor_type) latest ON latest.id = sr.id JOIN buildings b ON b.id = sr.building_id ORDER BY sr.id`);
     const recentEquipment = await db.all('SELECT e.id, e.name, e.type, e.location, e.status, b.name AS building FROM equipment e JOIN buildings b ON b.id = e.building_id ORDER BY e.last_checked_at DESC LIMIT 5');
-    res.json({ equipment, openMaintenance: maintenance.count, sensors, recentEquipment, requestPriorities, completedByMonth: Object.entries(completedByMonth).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, count]) => ({ month, count })), generatedAt: new Date().toISOString() });
+    res.json({ equipment, openMaintenance: Number(maintenance.count) || 0, sensors, recentEquipment, requestPriorities, completedByMonth: Object.entries(completedByMonth).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, count]) => ({ month, count })), generatedAt: new Date().toISOString() });
   } catch (error) { next(error); }
 });
 
