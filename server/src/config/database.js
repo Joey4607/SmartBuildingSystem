@@ -54,7 +54,11 @@ async function seedDatabase(db) {
   const email = process.env.ADMIN_EMAIL || 'admin@smartcampus.local';
   const password = process.env.ADMIN_PASSWORD || 'ChangeMe123!';
   const user = await db.get('SELECT id FROM users WHERE email = ?', email);
-  if (!user) await db.run('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)', 'Campus Administrator', email, await bcrypt.hash(password, 12));
+  if (!user) {
+    await db.run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', 'Campus Administrator', email, await bcrypt.hash(password, 12), 'admin');
+  } else {
+    await db.run("UPDATE users SET role = 'admin' WHERE email = ?", email);
+  }
   const studentEmail = process.env.STUDENT_EMAIL || 'student@smartcampus.local';
   const student = await db.get('SELECT id FROM users WHERE email = ?', studentEmail);
   if (!student) await db.run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', 'Student User', studentEmail, await bcrypt.hash(process.env.STUDENT_PASSWORD || 'Student123!', 12), 'student');
