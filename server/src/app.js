@@ -23,3 +23,7 @@ export function createApp() {
   app.use(notFound); app.use(errorHandler);
   return app;
 }
+
+// Vercel loads an Express service from its default export.  Keeping the named
+// factory also lets the local server create the same app during development.
+export default createApp();
