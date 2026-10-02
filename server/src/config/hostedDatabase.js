@@ -12,7 +12,7 @@ const schema = [
   `CREATE INDEX IF NOT EXISTS idx_readings_recorded ON sensor_readings(recorded_at DESC)`,
   `CREATE INDEX IF NOT EXISTS idx_maintenance_status ON maintenance_requests(status)`,
 ];
-function pgQuery(text){let index=0;return text.replace(/\?/g,()=>`$${++index}`).replace(/COLLATE NOCASE/gi,'').replace(/CURRENT_TIMESTAMP/g,'NOW()').replace(/datetime\('now', \$\d+\)/g,'NOW()');}
+function pgQuery(text){let index=0;return text.replace(/\?/g,()=>`$${++index}`).replace(/COLLATE NOCASE/gi,'').replace(/CURRENT_TIMESTAMP/g,'NOW()').replace(/datetime\('now', \$\d+\)/g,'NOW()').replace(/\bAS\s+([A-Za-z_]*[A-Z][A-Za-z0-9_]*)\b/g,'AS "$1"');}
 export async function getHostedDatabase(){
   if(hosted)return hosted;
   const connectionString=process.env.POSTGRES_URL||process.env.DATABASE_URL||process.env.NETLIFY_DB_URL;
