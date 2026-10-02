@@ -5,7 +5,12 @@ import { DatabaseSync } from 'node:sqlite';
 import bcrypt from 'bcryptjs';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.resolve(currentDir, '../../data');
+// Vercel functions can only write temporary files. The prototype database is
+// therefore placed in /tmp when deployed, while local development continues
+// to use the server/data directory.
+const dataDir = process.env.VERCEL
+  ? path.join('/tmp', 'smart-building-data')
+  : path.resolve(currentDir, '../../data');
 const schemaPath = path.resolve(currentDir, '../sql/schema.sql');
 let database;
 
