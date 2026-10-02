@@ -16,7 +16,7 @@ let database;
 
 export async function getDatabase() {
   if (database) return database;
-  if (process.env.NETLIFY || process.env.NETLIFY_DB_URL) {
+  if (process.env.POSTGRES_URL || process.env.DATABASE_URL || process.env.NETLIFY || process.env.NETLIFY_DB_URL) {
     const { getHostedDatabase } = await import('./hostedDatabase.js');
     database = await getHostedDatabase();
     return database;

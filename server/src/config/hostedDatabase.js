@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
 import postgres from 'postgres';
-import { getConnectionString } from '@netlify/database';
 
 let hosted;
 const schema = [
@@ -15,7 +14,10 @@ const schema = [
 ];
 function pgQuery(text){let index=0;return text.replace(/\?/g,()=>`$${++index}`).replace(/COLLATE NOCASE/gi,'').replace(/CURRENT_TIMESTAMP/g,'NOW()').replace(/datetime\('now', \$\d+\)/g,'NOW()');}
 export async function getHostedDatabase(){
-  if(hosted)return hosted; const sql=postgres(getConnectionString(),{prepare:false});
+  if(hosted)return hosted;
+  const connectionString=process.env.POSTGRES_URL||process.env.DATABASE_URL||process.env.NETLIFY_DB_URL;
+  if(!connectionString)throw new Error('A hosted database connection is not configured.');
+  const sql=postgres(connectionString,{prepare:false});
   hosted={exec:async text=>{for(const statement of text.split(';').map(s=>s.trim()).filter(Boolean))await sql.unsafe(statement)},get:async(text,...params)=>(await sql.unsafe(pgQuery(text),params))[0],all:async(text,...params)=>await sql.unsafe(pgQuery(text),params),run:async(text,...params)=>{const query=pgQuery(text);const rows=await sql.unsafe(/^INSERT/i.test(query)?query+' RETURNING id':query,params);return{lastID:Number(rows[0]?.id||0),changes:rows.count??rows.length}}};
   for(const statement of schema)await sql.unsafe(statement); await seed(hosted); return hosted;
 }
