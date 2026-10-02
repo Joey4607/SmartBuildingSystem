@@ -6,7 +6,8 @@ const router = Router();
 router.use(requireAuth);
 
 function ticketCode(request) {
-  const year = String(request.createdAt || new Date().getFullYear()).slice(0, 4);
+  const date = request.createdAt ? new Date(request.createdAt) : new Date();
+  const year = Number.isNaN(date.getTime()) ? new Date().getFullYear() : date.getUTCFullYear();
   return `REQ-${year}-${String(request.id).padStart(4, '0')}`;
 }
 
